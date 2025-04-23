@@ -131,6 +131,36 @@ ADD CONSTRAINT unique_gender_dim UNIQUE (gender);
 SELECT setval('gender_dim_gender_id_seq', (SELECT MAX(gender_id) FROM gender_dim));
 SELECT currval('gender_dim_gender_id_seq');
 
+
+--vaccine location SCD0
+CREATE TABLE vaccine_location_dim(
+vaccine_location VARCHAR(100),
+vaccine_location_id SERIAL,
+PRIMARY KEY (vaccine_location_id));
+ALTER TABLE vaccine_location_dim
+ADD CONSTRAINT unique_vaccine_location_dim UNIQUE (vaccine_location);
+
+SELECT setval('vaccine_location_dim_vaccine_location_id_seq', (SELECT MAX(vaccine_location_id) FROM vaccine_location_dim));
+SELECT currval('vaccine_location_dim_vaccine_location_id_seq');
+
+select * from vaccine_location_dim
+
+
+-- fips dimension table 
+CREATE TABLE fips_dim(
+    state_territory VARCHAR(50),
+    county VARCHAR(50),
+    region VARCHAR(20),
+    original_geography_type VARCHAR(50),
+    original_geography VARCHAR(50),
+	fips INTEGER,
+    fips_id SERIAL,
+    PRIMARY KEY (fips_id)
+);
+
+
+-- fact tables
+
 --snapshot fact table
 CREATE TABLE vaccine_cumulative_fact(
 vaccine_cumulative_id SERIAL,
@@ -153,18 +183,7 @@ w VARCHAR(10),
 PRIMARY KEY (vaccine_cumulative_id)
 );
 
---vaccine location SCD0
-CREATE TABLE vaccine_location_dim(
-vaccine_location VARCHAR(100),
-vaccine_location_id SERIAL,
-PRIMARY KEY (vaccine_location_id));
-ALTER TABLE vaccine_location_dim
-ADD CONSTRAINT unique_vaccine_location_dim UNIQUE (vaccine_location);
 
-SELECT setval('vaccine_location_dim_vaccine_location_id_seq', (SELECT MAX(vaccine_location_id) FROM vaccine_location_dim));
-SELECT currval('vaccine_location_dim_vaccine_location_id_seq');
-
-select * from vaccine_location_dim
 
 --influenza_cumulative_fact
 CREATE TABLE influenza_cumulative_fact(
@@ -204,4 +223,19 @@ FOREIGN KEY (vaccine_transaction_vaccine_id) REFERENCES vaccine_dim(vaccine_id),
 FOREIGN KEY (vaccine_transaction_dose_id) REFERENCES dose_dim(dose_id),
 FOREIGN KEY (vaccine_transaction_geography_id) REFERENCES geography_dim(geography_id),
 FOREIGN KEY (vaccine_transaction_gender_id) REFERENCES gender_dim(gender_id));
+
+
+-- influenza transaction fact
+CREATE TABLE influenza_transaction_fact(
+influenza_transaction_id SERIAL,
+age VARCHAR(100),
+influenza_transaction_estimate_pct FLOAT, 
+influenza_transaction_ci_lower FLOAT,
+influenza_transaction_ci_upper FLOAT,
+influenza_transaction_survey_datetime DATE REFERENCES datetime_dim(date_id),
+influenza_transaction_vaccine_id INTEGER REFERENCES vaccine_dim(vaccine_id),
+influenza_transaction_fips_id INTEGER REFERENCES fips_dim(fips_id),
+influenza_transaction_location_id INTEGER REFERENCES vaccine_location_dim(vaccine_location_id),
+PRIMARY KEY (influenza_transaction_id)
+);
 
