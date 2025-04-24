@@ -1,5 +1,6 @@
 -- create a view to include both insurance and poverty
 -- this is used to answer the business question (2) What impact does enomonic background have on influenza vaccination rate
+-- this view can be connected in tableau
 CREATE VIEW combined_vaccine_coverage_view AS
 WITH aggregated_insurance AS (
   SELECT 
@@ -148,3 +149,42 @@ WITH aggregated_query AS (
   geography NULLS LAST,
   cleaned_vaccine NULLS LAST,
   age NULLS LAST
+
+
+--This helps us answer business question 5
+--by ranking and listing out the top 3 age groups by state
+--That way, when we launch the campaign in the various states, we know which age group to target
+  WITH aggregated_query AS (
+  SELECT
+    vaccine.cleaned_vaccine,
+    icf.age AS age,
+    geography.state_territory AS geography,
+    icf.influenza_cumulative_estimate_pct AS estimated_vaccine_coverage
+  FROM influenza_cumulative_fact icf
+  JOIN vaccine_dim vaccine 
+    ON vaccine.vaccine_id = icf.influenza_cumulative_vaccine_id
+  JOIN geography_dim geography 
+    ON geography.geography_id = icf.influenza_cumulative_geography_id
+  WHERE 
+    icf.influenza_cumulative_estimate_pct != 'NaN'
+    AND vaccine.cleaned_vaccine = 'Influenza'
+),
+rolledup_query AS (
+  SELECT 
+    cleaned_vaccine,
+    age,
+    geography,
+    AVG(estimated_vaccine_coverage) AS average_coverage
+  FROM aggregated_query
+  GROUP BY rollup(geography, cleaned_vaccine, age)
+  HAVING geography IS NOT NULL AND cleaned_vaccine IS NOT NULL AND age IS NOT NULL
+),
+ranked_query AS (
+  SELECT *, 
+         RANK() OVER (PARTITION BY geography ORDER BY average_coverage) AS rank
+  FROM rolledup_query
+)
+SELECT * 
+FROM ranked_query
+WHERE rank <= 3
+ORDER BY average_coverage, geography;
