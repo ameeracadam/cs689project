@@ -4,7 +4,7 @@
 ## Analysing vaccine trends in US
 The ERD for the project has been updated to include the `influenza_transaction_fact` table and the `fips_dimension` table. 
 
-![Updated ERD Table](erd.png)
+![Updated ERD Table](delta_report_erd.png)
 
 The data flow diagram has been updated to include transformations made in other tables
 ![Updated Data Flow Diagram](data_flow_diagram.png)
