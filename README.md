@@ -26,3 +26,8 @@ https://data.cdc.gov/Child-Vaccinations/Vaccination-Coverage-among-Young-Childre
 
 ## API Used
 The FIPS dataset is obtained through the FIPS API maintained by the [Census Bureau](https://www.census.gov/data/developers/guidance/api-user-guide.html)
+
+
+## Simple AWS architecture
+I mocked up a very simple AWS architecture that could allow the DB to be put onto the cloud
+![Simple AWS architecture](aws_archi.png)
